@@ -1,0 +1,123 @@
+import TraineeProfile from "../models/TraineeProfile.js";
+import TrainerProfile from "../models/TrainerProfile.js";
+import { signupService, loginService } from "../services/user-service.js";
+import { calculateBMI, getBMICategory } from "../utils/bmi.js";
+import User from "../models/User.js";
+import { Op } from "sequelize";
+export const completeTraineeOnboarding=async(req,res)=>{
+    try{
+        const userId=req.id;
+        const user=await User.findByPk(userId);
+        if(!user || user.role!=="trainee"){
+            return res.status(403).json({ success:false, message:"Only trainees can complete this onboarding" });
+        }
+        if(user.onboardingCompleted){
+            return res.status(400).json({ success:false, message:"Trainee onboarding already completed" });
+        }
+        
+        const {age,gender,heightCM,weightKG,fitnessGoals,medicalConditions}=req.body;
+        const existingProfile=await TraineeProfile.findOne({ where:{ userId } });
+        if(existingProfile){
+            return res.status(400).json({ success:false, message:"Trainee profile already exists" });
+        }
+        const bmi = calculateBMI(heightCM, weightKG);
+        const bmiCategory = getBMICategory(bmi);
+        await TraineeProfile.create({
+            userId,age,gender,heightCM,weightKG,fitnessGoals,medicalConditions,  bmi,
+            bmiCategory,
+        }),
+        await User.update({ onboardingCompleted:true },{ where:{ id:userId } });
+        res.status(201).json({ success:true, message:"Trainee onboarding completed successfully", bmi,
+            bmiCategory });
+    }catch(error){
+        res.status(500).json({ success:false, message:"Onboarding failed due to server error" });
+    }
+}
+
+
+export const searchTrainers = async (req, res) => {
+  try {
+    const { q, minExperience } = req.query;
+
+    const whereClause = {};
+    const userWhereClause = {};
+
+    /* 🔍 Global text search */
+    if (q) {
+      whereClause[Op.or] = [
+        { specialties: { [Op.iLike]: `%${q}%` } },
+        { certifications: { [Op.iLike]: `%${q}%` } },
+        { bio: { [Op.iLike]: `%${q}%` } }
+      ];
+
+      userWhereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${q}%` } },
+        { email: { [Op.iLike]: `%${q}%` } }
+      ];
+    }
+
+    /* 🎯 Experience filter */
+    if (minExperience) {
+      whereClause.experienceYears = {
+        [Op.gte]: Number(minExperience)
+      };
+    }
+
+    const trainers = await TrainerProfile.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          attributes: ["id", "name", "email"],
+          where: Object.keys(userWhereClause).length ? userWhereClause : undefined
+        }
+      ]
+    });
+
+    res.status(200).json({
+      success: true,
+      count: trainers.length,
+      trainers
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to search trainers due to server error"
+    });
+  }
+};
+export const getTrainerInfo=async(req,res)=>{
+    try{
+        const userId=req.id;
+        const user=await User.findByPk(userId);
+        if(!user || user.role!=="trainer"){
+            return res.status(403).json({ success:false, message:"Only trainers can access this information" });
+        }
+        const trainerProfile=await TrainerProfile.findOne({where:{ userId } });
+        if(!trainerProfile){
+            return res.status(404).json({ success:false, message:"Trainer profile not found" });
+        }
+        res.status(200).json({ success:true, trainerProfile });
+    }
+    catch(error){
+        res.status(500).json({ success:false, message:"Failed to retrieve trainer information due to server error" });
+    }
+}
+export const getTraineeInfo=async(req,res)=>{
+    try{
+        const userId=req.id;
+        const user=await User.findByPk(userId);
+        if(!user || user.role!=="trainee"){
+            return res.status(403).json({ success:false, message:"Only trainees can access this information" });
+        }
+        const traineeProfile=await TraineeProfile.findOne({where:{ userId } });
+        if(!traineeProfile){
+            return res.status(404).json({ success:false, message:"Trainee profile not found" });
+        }
+        res.status(200).json({ success:true, traineeProfile });
+    }
+    catch(error){
+        res.status(500).json({ success:false, message:"Failed to retrieve trainee information due to server error" });
+    }
+}
