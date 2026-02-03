@@ -8,7 +8,12 @@ const authMiddleware = (req, res, next) => {
         }
         const decoded = jwt.verify(token, "kartik");
         console.log("Auth Middleware Token:", token);
-        req.id = decoded.id;
+        // req.id = decoded.id;
+        // req.role = decoded.role;
+        req.user = {
+            id: decoded.id,
+            role: decoded.role // may be undefined for now, that's OK
+          };
         console.log("Decoded Token in Auth Middleware:", decoded);
         next(); 
    }catch(error){

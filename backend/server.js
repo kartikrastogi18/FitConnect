@@ -59,6 +59,7 @@ import sequelize from "./db.js";
 import authRoutes from "./routes/user-routes.js";
 import traineeRoutes from "./routes/trainee-routes.js";
 import trainerRoutes from "./routes/trainer-routes.js";
+import adminRoutes from "./routes/admin-routes.js";
 
 import cors from "cors";
 const app = express();
@@ -76,6 +77,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/", traineeRoutes);
 app.use("/", trainerRoutes);

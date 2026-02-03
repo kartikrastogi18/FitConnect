@@ -1,8 +1,10 @@
 import TraineeProfile from "../models/TraineeProfile.js";
-import TrainerProfile from "../models/TrainerProfile.js";
+// import TrainerProfile from "../models/TrainerProfile.js";
+import { User, TrainerProfile } from "../models/index.js";
+
 import { signupService, loginService } from "../services/user-service.js";
 import { calculateBMI, getBMICategory } from "../utils/bmi.js";
-import User from "../models/User.js";
+// import User from "../models/User.js";
 import { Op } from "sequelize";
 export const completeTraineeOnboarding=async(req,res)=>{
     try{
@@ -40,23 +42,17 @@ export const searchTrainers = async (req, res) => {
     const { q, minExperience } = req.query;
 
     const whereClause = {};
-    const userWhereClause = {};
 
-    /* 🔍 Global text search */
     if (q) {
       whereClause[Op.or] = [
         { specialties: { [Op.iLike]: `%${q}%` } },
         { certifications: { [Op.iLike]: `%${q}%` } },
-        { bio: { [Op.iLike]: `%${q}%` } }
-      ];
-
-      userWhereClause[Op.or] = [
-        { name: { [Op.iLike]: `%${q}%` } },
-        { email: { [Op.iLike]: `%${q}%` } }
+        { bio: { [Op.iLike]: `%${q}%` } },
+        { "$trainerUser.username$": { [Op.iLike]: `%${q}%` } },
+        { "$trainerUser.email$": { [Op.iLike]: `%${q}%` } }
       ];
     }
 
-    /* 🎯 Experience filter */
     if (minExperience) {
       whereClause.experienceYears = {
         [Op.gte]: Number(minExperience)
@@ -68,13 +64,18 @@ export const searchTrainers = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "name", "email"],
-          where: Object.keys(userWhereClause).length ? userWhereClause : undefined
+          as: "trainerUser",
+          attributes: ["id", "username", "email"],
+          where: {
+            role: "trainer",
+            status: "APPROVED" 
+          }
         }
-      ]
+      ],
+      
     });
 
-    res.status(200).json({
+    res.json({
       success: true,
       count: trainers.length,
       trainers
@@ -83,13 +84,13 @@ export const searchTrainers = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: "Failed to search trainers due to server error"
+      message: error.message
     });
   }
 };
 export const getTrainerInfo=async(req,res)=>{
     try{
-        const userId=req.id;
+        const userId=req.user.id;
         const user=await User.findByPk(userId);
         if(!user || user.role!=="trainer"){
             return res.status(403).json({ success:false, message:"Only trainers can access this information" });
@@ -101,12 +102,13 @@ export const getTrainerInfo=async(req,res)=>{
         res.status(200).json({ success:true, trainerProfile });
     }
     catch(error){
-        res.status(500).json({ success:false, message:"Failed to retrieve trainer information due to server error" });
+    console.log(error);
+        res.status(500).json({ success:false, message:error.message });
     }
 }
 export const getTraineeInfo=async(req,res)=>{
     try{
-        const userId=req.id;
+        const userId=req.user.id;
         const user=await User.findByPk(userId);
         if(!user || user.role!=="trainee"){
             return res.status(403).json({ success:false, message:"Only trainees can access this information" });

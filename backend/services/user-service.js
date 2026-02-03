@@ -32,7 +32,7 @@ const signupService = async (name , email , password , role)=>{
     }
 }
 const createToken=(userID)=>{
-    const token=jwt.sign({id:userID},"kartik",{expiresIn:"1d"});
+    const token=jwt.sign({id:userID,role:User.role},"kartik",{expiresIn:"1d"});
     return token;
 }
 const loginService=async(email,password)=>{
