@@ -55,6 +55,12 @@
 
 // startServer();
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
+import { socketHandler } from "./socket.js";
+
+socketHandler(io);
+
 import sequelize from "./db.js";
 import authRoutes from "./routes/user-routes.js";
 import traineeRoutes from "./routes/trainee-routes.js";
@@ -62,6 +68,14 @@ import trainerRoutes from "./routes/trainer-routes.js";
 import adminRoutes from "./routes/admin-routes.js";
 
 import cors from "cors";
+import messageRoutes from "./routes/message-routes.js";
+import chatRoutes from "./routes/chat-routes.js";
+
+
+
+
+
+
 const app = express();
 app.use(express.json());
 app.use(
@@ -71,6 +85,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.use("/messages", messageRoutes);
+app.use("/chats", chatRoutes);
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -94,6 +111,19 @@ app.get("/", async (req, res) => {
 await sequelize.authenticate();
 await sequelize.sync({ alter: true });
 
-app.listen(5000, () => {
-  console.log("Server is running on port 5000");
+import { Server } from "socket.io";
+import http from "http";
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+app.set("io", io); // 🔥 allow controllers to emit
+
+server.listen(5000, () => {
+  console.log("Server running on port 5000");
 });

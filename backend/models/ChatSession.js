@@ -1,35 +1,51 @@
 import sequelize from "../db.js";
 import { DataTypes } from "sequelize";
 import User from "./User.js";
-const ChatSession=sequelize.define("ChatSession", {
+
+const ChatSession = sequelize.define(
+  "ChatSession",
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
+
     traineeId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: "id",
-        },
-        onDelete: "CASCADE",
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
     },
+
+    // 🔥 NULL for AI chat
     trainerId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: "id",
-        },
-        onDelete: "CASCADE",
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "SET NULL",
     },
+
+    // 🔥 EXPLICIT CHAT TYPE
+    type: {
+      type: DataTypes.ENUM("TRAINER", "AI"),
+      allowNull: false,
+    },
+
     status: {
-        type: DataTypes.ENUM("ACTIVE", "COMPLETED", "CANCELLED"),
-        defaultValue: "ACTIVE",
+      type: DataTypes.ENUM("PENDING","ACTIVE", "COMPLETED", "CANCELLED"),
+      defaultValue: "ACTIVE",
     },
-}, {
+  },
+  {
     timestamps: true,
-});
+  }
+);
+
 export default ChatSession;

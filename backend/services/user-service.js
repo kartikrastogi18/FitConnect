@@ -31,8 +31,9 @@ const signupService = async (name , email , password , role)=>{
        return{ success:false, message:"Signup failed", error:error.message };
     }
 }
-const createToken=(userID)=>{
-    const token=jwt.sign({id:userID,role:User.role},"kartik",{expiresIn:"1d"});
+const createToken=(userID,role)=>{
+    const token=jwt.sign({id:userID,role:role},"kartik",{expiresIn:"1d"});
+    console.log("ass",role);
     return token;
 }
 const loginService=async(email,password)=>{
@@ -51,7 +52,7 @@ const loginService=async(email,password)=>{
         if(!isMatch){
             return{ success:false, message:"Invalid credentials" };
         }
-        const token=createToken(existingUser.id);
+        const token=createToken(existingUser.id,existingUser.role);
         return{ success:true, message:"Login successful", token, user:{ id:existingUser.id, username:existingUser.username, email:existingUser.email, role:existingUser.role, status:existingUser.status } };
     }catch(error){
         return{ success:false, message:"Login failed", error:error.message };

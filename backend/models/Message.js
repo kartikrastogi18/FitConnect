@@ -17,7 +17,7 @@ const Message=sequelize.define("Message", {
         onDelete: "CASCADE",
     },
     senderRole: {
-        type: DataTypes.ENUM("trainee", "trainer"),
+        type: DataTypes.ENUM("trainee", "trainer",'ai', 'system'),
         allowNull: false,
     },
     content: {
