@@ -40,7 +40,8 @@ const ChatSession = sequelize.define(
 
     status: {
       type: DataTypes.ENUM("PENDING","ACTIVE", "COMPLETED", "CANCELLED"),
-      defaultValue: "ACTIVE",
+      allowNull: false,
+      defaultValue: "ACTIVE", // AI chats start active, trainer chats set to PENDING explicitly
     },
   },
   {

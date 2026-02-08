@@ -1,23 +1,44 @@
 import jwt from "jsonwebtoken";
+import config from "../config/index.js";
+import { UnauthorizedError } from "../utils/errors.js";
+
 const authMiddleware = (req, res, next) => {
-   try{
-        const token = req.headers.authorization?.split(" ")[1];
-        console.log("Auth Middleware Token:1", token);
-        if (!token) {
-            return res.status(401).json({ success:false, message:"No token provided" });
-        }
-        const decoded = jwt.verify(token, "kartik");
-        console.log("Auth Middleware Token:", token);
-        // req.id = decoded.id;
-        // req.role = decoded.role;
-        req.user = {
-            id: decoded.id,
-            role: decoded.role // may be undefined for now, that's OK
-          };
-        console.log("Decoded Token in Auth Middleware:", decoded);
-        next(); 
-   }catch(error){
-       return res.status(401).json({ success:false, message:"Unauthorized access" });
-   }
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new UnauthorizedError("No token provided");
+    }
+    
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, config.jwt.secret);
+    
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+    };
+    
+    next();
+  } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid token" 
+      });
+    }
+    
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Token expired" 
+      });
+    }
+    
+    return res.status(401).json({ 
+      success: false, 
+      message: error.message || "Unauthorized access" 
+    });
+  }
 };
+
 export default authMiddleware;

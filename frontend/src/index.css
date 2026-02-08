@@ -1,0 +1,307 @@
+/* Google Fonts - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0A0A0A;
+    color: white;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #2D2D2D;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #39FF14;
+  }
+}
+
+@layer components {
+
+  /* Neon Button Styles */
+  .btn-neon {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(to right, #39FF14, #AAFF00);
+    color: #0A0A0A;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease-out;
+  }
+
+  .btn-neon:hover {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+    transform: scale(1.05);
+  }
+
+  .btn-neon:active {
+    transform: scale(0.95);
+  }
+
+  .btn-neon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-neon:disabled:hover {
+    transform: scale(1);
+    box-shadow: none;
+  }
+
+  .btn-electric {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(to right, #00D4FF, #00FFFF);
+    color: #0A0A0A;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease-out;
+  }
+
+  .btn-electric:hover {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    transform: scale(1.05);
+  }
+
+  .btn-electric:active {
+    transform: scale(0.95);
+  }
+
+  .btn-dark {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #242424;
+    color: white;
+    border-radius: 0.5rem;
+    border: 1px solid #363636;
+    transition: all 0.3s ease-out;
+  }
+
+  .btn-dark:hover {
+    border-color: #39FF14;
+    color: #39FF14;
+  }
+
+  .btn-dark:active {
+    transform: scale(0.95);
+  }
+
+  .btn-ghost {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    color: #9CA3AF;
+    transition: all 0.2s;
+    border-radius: 0.5rem;
+  }
+
+  .btn-ghost:hover {
+    color: #39FF14;
+    background-color: #1A1A1A;
+  }
+
+  /* Card Styles */
+  .card-dark {
+    background-color: #111111;
+    border: 1px solid #242424;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.3s;
+  }
+
+  .card-dark:hover {
+    border-color: rgba(57, 255, 20, 0.3);
+  }
+
+  .card-glow {
+    background: linear-gradient(to bottom right, #111111, #1A1A1A);
+    border: 1px solid #2D2D2D;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.3s;
+  }
+
+  .card-glow:hover {
+    box-shadow: 0 0 40px rgba(57, 255, 20, 0.3);
+    border-color: rgba(57, 255, 20, 0.5);
+  }
+
+  .card-stat {
+    background: linear-gradient(to bottom right, #1A1A1A, #111111);
+    border: 1px solid #2D2D2D;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, #39FF14, #00D4FF);
+  }
+
+  /* Input Styles */
+  .input-dark {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #1A1A1A;
+    border: 1px solid #2D2D2D;
+    border-radius: 0.5rem;
+    color: white;
+    transition: all 0.2s;
+  }
+
+  .input-dark::placeholder {
+    color: #6B7280;
+  }
+
+  .input-dark:focus {
+    outline: none;
+    border-color: #39FF14;
+    box-shadow: 0 0 0 1px #39FF14;
+  }
+
+  /* Badge Styles */
+  .badge-neon {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: rgba(57, 255, 20, 0.2);
+    color: #39FF14;
+    border: 1px solid rgba(57, 255, 20, 0.3);
+  }
+
+  .badge-electric {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: rgba(0, 212, 255, 0.2);
+    color: #00D4FF;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+  }
+
+  .badge-pending {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: rgba(234, 179, 8, 0.2);
+    color: #FACC15;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+  }
+
+  .badge-danger {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    background: linear-gradient(to right, #39FF14, #00D4FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-fire {
+    background: linear-gradient(to right, #F97316, #EF4444, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow Effects */
+  .glow-border {
+    border: 1px solid rgba(57, 255, 20, 0.3);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+  }
+
+  /* Mission Control Container */
+  .mission-control {
+    min-height: 100vh;
+    background-color: #0A0A0A;
+  }
+
+  /* Stats Number */
+  .stat-number {
+    font-size: 2.25rem;
+    font-family: 'Orbitron', 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    background: linear-gradient(to right, #39FF14, #00D4FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    0% {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}

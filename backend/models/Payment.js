@@ -12,6 +12,7 @@ const Payment = sequelize.define("Payment", {
   chatId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    unique: true, // One payment per chat
     references: {
       model: ChatSession,
       key: "id",
@@ -29,35 +30,26 @@ const Payment = sequelize.define("Payment", {
     allowNull: false,
   },
 
-  // 🔑 PAYMENT GATEWAY DATA
-  orderId: {
+  // 🔑 STRIPE PAYMENT DATA
+  stripePaymentIntentId: {
     type: DataTypes.STRING,
-    allowNull: false, // Razorpay order_id
-  },
-
-  paymentId: {
-    type: DataTypes.STRING, // Razorpay payment_id
-    allowNull: true,
-  },
-
-  signature: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    allowNull: false,
+    unique: true,
   },
 
   amount: {
-    type: DataTypes.INTEGER, // ALWAYS store in paise
+    type: DataTypes.INTEGER, // ALWAYS store in paise/cents
     allowNull: false,
   },
 
   currency: {
     type: DataTypes.STRING,
-    defaultValue: "INR",
+    defaultValue: "inr",
   },
 
   status: {
     type: DataTypes.ENUM(
-      "CREATED",   // order created
+      "CREATED",   // payment intent created
       "HELD",      // payment success, money in escrow
       "RELEASED",  // paid to trainer
       "REFUNDED",  // refunded to trainee
@@ -66,8 +58,20 @@ const Payment = sequelize.define("Payment", {
     defaultValue: "CREATED",
   },
 
+  // Lifecycle timestamps
+  releasedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
+  refundedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+
 }, {
   timestamps: true,
 });
 
 export default Payment;
+

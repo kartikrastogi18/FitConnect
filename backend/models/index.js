@@ -50,6 +50,7 @@ import TrainerProfile from "./TrainerProfile.js";
 import ChatSession from "./ChatSession.js";
 import Message from "./Message.js";
 import Report from "./Report.js";
+import Payment from "./Payment.js";
 
 /* ================= PROFILES ================= */
 
@@ -83,6 +84,16 @@ User.hasMany(ChatSession, {
   as: "TrainerChats"
 });
 
+ChatSession.belongsTo(User, {
+  foreignKey: "traineeId",
+  as: "trainee"
+});
+
+ChatSession.belongsTo(User, {
+  foreignKey: "trainerId",
+  as: "trainer"
+});
+
 ChatSession.hasMany(Message, {
   foreignKey: "chatId",
   as: "messages"
@@ -90,6 +101,38 @@ ChatSession.hasMany(Message, {
 Message.belongsTo(ChatSession, {
   foreignKey: "chatId",
   as: "chat"
+});
+
+/* ================= PAYMENT ================= */
+
+ChatSession.hasOne(Payment, {
+  foreignKey: "chatId",
+  as: "payment"
+});
+
+Payment.belongsTo(ChatSession, {
+  foreignKey: "chatId",
+  as: "chat"
+});
+
+User.hasMany(Payment, {
+  foreignKey: "traineeId",
+  as: "paymentsAsTrainee"
+});
+
+User.hasMany(Payment, {
+  foreignKey: "trainerId",
+  as: "paymentsAsTrainer"
+});
+
+Payment.belongsTo(User, {
+  foreignKey: "traineeId",
+  as: "trainee"
+});
+
+Payment.belongsTo(User, {
+  foreignKey: "trainerId",
+  as: "trainer"
 });
 
 /* ================= REPORT ================= */
@@ -108,5 +151,7 @@ export {
   TrainerProfile,
   ChatSession,
   Message,
+  Payment,
   Report
 };
+

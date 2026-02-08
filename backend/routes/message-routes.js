@@ -1,16 +1,20 @@
 import express from "express";
 import authMiddleware from "../middleware/auth-middleware.js";
-import { sendMessage} from "../controllers/message-controller.js";
-import { getChatMessages } from "../controllers/message-controller.js";
+import { validateSendMessage } from "../middleware/validate.js";
+import {
+  getChatMessages,
+  sendMessage,
+} from "../controllers/message-controller.js";
 
 const router = express.Router();
 
-router.post("/send", authMiddleware, sendMessage);
-router.get(
-    "/chats/:chatId/messages",
-    authMiddleware,
-    getChatMessages
-  );
-  
+// All message routes require authentication
+router.use(authMiddleware);
+
+// Get messages for a chat
+router.get("/:chatId", getChatMessages);
+
+// Send a message
+router.post("/send", validateSendMessage, sendMessage);
 
 export default router;

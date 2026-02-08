@@ -1,129 +1,102 @@
-// import express from "express";
-// import sequelize from "./db.js";
-// // import cors from "cors";
-// const app=express();
-// app.use(express.json());
-// // app.use(cors({
-// //     origin: "*",
-// //     methods: ["GET", "POST", "PUT", "DELETE"],
-// //     allowedHeaders: ["Content-Type", "Authorization"]
-// //   }));
-// //   app.use((req, res, next) => {
-// //     res.setHeader("Access-Control-Allow-Origin", "*");
-// //     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-// //     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-// //     next();
-// //   });
-// // app.use("/hotels",hotelRoutes);
-// // app.use("/menu",menuRoutes);
-// app.get("/", async (req, res) => {
-//     try {
-//       res.json({ message: "PostgreSQL connected!" });
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).send("Error connecting to DB");
-//     }
-//   });
-//   await sequelize.authenticate();
-//   await sequelize.sync({alter:true});
-
-//   app.listen(5000,()=>{
-//     console.log("Server is running on port 5000");
-//   });
-// import express from "express";
-// import sequelize from "./models/index.js"; // 👈 IMPORT SEQUELIZE INSTANCE
-// import User from "./models/User.js"; // 👈 THIS CREATES TABLE
-
-// const app = express();
-// app.use(express.json());
-
-// const startServer = async () => {
-//   try {
-//     await sequelize.authenticate();
-//     console.log("DB connected");
-
-//     await sequelize.sync({ alter: true });
-//     console.log("Tables synced");
-
-//     app.listen(5000, () => {
-//       console.log("Server running on port 5000");
-//     });
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
-
-// startServer();
-import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
-import { socketHandler } from "./socket.js";
 
-socketHandler(io);
+import express from "express";
+import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
 
 import sequelize from "./db.js";
+import config from "./config/index.js";
+import { errorHandler } from "./utils/errors.js";
+
+// routes
 import authRoutes from "./routes/user-routes.js";
 import traineeRoutes from "./routes/trainee-routes.js";
 import trainerRoutes from "./routes/trainer-routes.js";
 import adminRoutes from "./routes/admin-routes.js";
-
-import cors from "cors";
 import messageRoutes from "./routes/message-routes.js";
 import chatRoutes from "./routes/chat-routes.js";
+import paymentRoutes from "./routes/payment-routes.js";
 
-
-
-
-
+// socket handler
+import { socketHandler } from "./socket.js";
 
 const app = express();
+
+/* -------------------- MIDDLEWARE -------------------- */
 app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: config.frontend.url,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+/* -------------------- ROUTES -------------------- */
+app.use("/auth", authRoutes);
+app.use("/admin", adminRoutes);
 app.use("/messages", messageRoutes);
 app.use("/chats", chatRoutes);
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-app.use("/admin", adminRoutes);
-app.use("/auth", authRoutes);
+app.use("/payments", paymentRoutes);
 app.use("/", traineeRoutes);
 app.use("/", trainerRoutes);
 
-app.get("/", async (req, res) => {
-  try {
-    res.json({ message: "PostgreSQL connected!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error connecting to DB");
-  }
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "FitConnect API Server",
+    version: "2.0.0",
+    status: "running"
+  });
 });
 
-await sequelize.authenticate();
-await sequelize.sync({ alter: true });
+/* -------------------- ERROR HANDLER -------------------- */
+app.use(errorHandler);
 
-import { Server } from "socket.io";
-import http from "http";
+/* -------------------- DB -------------------- */
+try {
+  await sequelize.authenticate();
+  console.log("✅ Database connected successfully");
+  
+  await sequelize.sync({ alter: true });
+  console.log("✅ Database synced");
+} catch (error) {
+  console.error("❌ Database connection failed:", error);
+  process.exit(1);
+}
 
+/* -------------------- HTTP + SOCKET -------------------- */
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: config.frontend.url,
+    credentials: true,
   },
 });
 
-app.set("io", io); // 🔥 allow controllers to emit
+// Attach io to app for use in controllers
+app.set("io", io);
 
-server.listen(5000, () => {
-  console.log("Server running on port 5000");
+// Initialize socket logic
+socketHandler(io);
+
+/* -------------------- START SERVER -------------------- */
+const PORT = config.port;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📝 Environment: ${config.nodeEnv}`);
+  console.log(`🌐 Frontend URL: ${config.frontend.url}`);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, shutting down gracefully");
+  server.close(() => {
+    console.log("Server closed");
+    sequelize.close();
+    process.exit(0);
+  });
 });

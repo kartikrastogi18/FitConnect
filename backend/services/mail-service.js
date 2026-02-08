@@ -4,15 +4,15 @@ console.log("---process.env.EMAIL_USERprocess.env.EMAIL_USER", process.env.EMAIL
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "kartikrastogi4544@gmail.com",
-    pass: "rbmywhkvxhlodcoc",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
 export const sendOTP = async (to, otp) => {
   try {
     const mailOptions = {
-      from: "kartikrastogi4544@gmail.com",
+      from: process.env.EMAIL_USER,
       to,
       subject: "Fit_Connect - OTP Verification",
       html: `

@@ -4,6 +4,7 @@ import TrainerProfile from "../models/TrainerProfile.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendOTP } from "./mail-service.js";
+import config from "../config/index.js";
 const signupService = async (name , email , password , role)=>{
     try{
         const existingUser=await User.findOne({ where:{email} });
@@ -32,8 +33,11 @@ const signupService = async (name , email , password , role)=>{
     }
 }
 const createToken=(userID,role)=>{
-    const token=jwt.sign({id:userID,role:role},"kartik",{expiresIn:"1d"});
-    console.log("ass",role);
+    const token=jwt.sign(
+        {id:userID,role:role},
+        config.jwt.secret,
+        {expiresIn:config.jwt.expiresIn}
+    );
     return token;
 }
 const loginService=async(email,password)=>{
@@ -53,7 +57,7 @@ const loginService=async(email,password)=>{
             return{ success:false, message:"Invalid credentials" };
         }
         const token=createToken(existingUser.id,existingUser.role);
-        return{ success:true, message:"Login successful", token, user:{ id:existingUser.id, username:existingUser.username, email:existingUser.email, role:existingUser.role, status:existingUser.status } };
+        return{ success:true, message:"Login successful", token, user:{ id:existingUser.id, username:existingUser.username, email:existingUser.email, role:existingUser.role, status:existingUser.status, onboardingCompleted:existingUser.onboardingCompleted } };
     }catch(error){
         return{ success:false, message:"Login failed", error:error.message };
     }

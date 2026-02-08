@@ -8,7 +8,7 @@ import { calculateBMI, getBMICategory } from "../utils/bmi.js";
 import { Op } from "sequelize";
 export const completeTraineeOnboarding=async(req,res)=>{
     try{
-        const userId=req.id;
+        const userId=req.user.id;
         const user=await User.findByPk(userId);
         if(!user || user.role!=="trainee"){
             return res.status(403).json({ success:false, message:"Only trainees can complete this onboarding" });
