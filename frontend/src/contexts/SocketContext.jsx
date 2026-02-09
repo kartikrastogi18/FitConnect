@@ -12,7 +12,7 @@ export const useSocket = () => {
     return context;
 };
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_API_URL;
 
 export const SocketProvider = ({ children }) => {
     const { token, isAuthenticated } = useAuth();
