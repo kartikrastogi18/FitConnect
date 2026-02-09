@@ -26,14 +26,27 @@ const app = express();
 
 /* -------------------- MIDDLEWARE -------------------- */
 app.use(express.json());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://fit-connect-plum-nine.vercel.app",
+];
+
 app.use(
   cors({
-    origin: config.frontend.url,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
 
 /* -------------------- ROUTES -------------------- */
 app.use("/auth", authRoutes);
@@ -72,7 +85,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: config.frontend.url,
+    origin: allowedOrigins,
     credentials: true,
   },
 });
