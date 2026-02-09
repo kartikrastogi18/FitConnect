@@ -1,12 +1,20 @@
-import {Sequelize} from "sequelize";
-const sequelize=new Sequelize("fitness","fit_admin","fit@123",{
-    host:"localhost",
-    dialect:"postgres",
-    logging:false,
+import { Sequelize } from "sequelize";
+
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  "postgresql://fit_admin:fit@123@localhost:5432/fitness";
+
+const sequelize = new Sequelize(DATABASE_URL, {
+  dialect: "postgres",
+  logging: false,
+  dialectOptions: process.env.DATABASE_URL
+    ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      }
+    : {},
 });
-// sequelize.authenticate().then(()=>{
-//     console.log("Database connected successfully");
-// }).catch((err)=>{
-//     console.error("Unable to connect to the database:",err);
-// });
+
 export default sequelize;
