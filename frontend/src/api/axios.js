@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000, // 30 second timeout for all requests
 });
 
 // Request interceptor - add JWT token
@@ -23,16 +24,29 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle 401 errors
+// Response interceptor - handle errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle timeout errors
+    if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+      console.error("❌ Request timeout");
+      error.message = "Request timed out. Please check your connection and try again.";
+    }
+    
+    // Handle network errors
+    if (!error.response) {
+      console.error("❌ Network error:", error.message);
+      error.message = "Network error. Please check your internet connection.";
+    }
+    
+    // Handle 401 errors
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
+    
     return Promise.reject(error);
   }
 );

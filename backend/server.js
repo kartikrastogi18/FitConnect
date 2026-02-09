@@ -73,8 +73,14 @@ try {
   await sequelize.authenticate();
   console.log("✅ Database connected successfully");
   
-  await sequelize.sync({ alter: true });
-  console.log("✅ Database synced");
+  // Only sync database in development mode
+  // In production, use migrations instead of sync({ alter: true })
+  if (config.nodeEnv === "development") {
+    await sequelize.sync({ alter: true });
+    console.log("✅ Database synced (development mode)");
+  } else {
+    console.log("⚡ Production mode - skipping DB sync (use migrations)");
+  }
 } catch (error) {
   console.error("❌ Database connection failed:", error);
   process.exit(1);
