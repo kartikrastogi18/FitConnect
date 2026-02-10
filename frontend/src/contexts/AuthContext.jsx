@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await authAPI.signup({ name, email, password, role });
             toast.success(response.data.message);
-            return { success: true, data: response.data };
+            return { success: true, data: response.data, otpFallback: response.data.otpFallback || false };
         } catch (error) {
             const message = error.response?.data?.message || "Signup failed";
             toast.error(message);

@@ -11,7 +11,8 @@ import {
     EyeOff,
     Dumbbell,
     Users,
-    CheckCircle
+    CheckCircle,
+    Info
 } from "lucide-react";
 
 export const Register = () => {
@@ -20,6 +21,7 @@ export const Register = () => {
     const [step, setStep] = useState(1); // 1: Form, 2: Role, 3: OTP
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [otpFallback, setOtpFallback] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -42,6 +44,7 @@ export const Register = () => {
         const result = await signup(formData.name, formData.email, formData.password, formData.role);
 
         if (result.success) {
+            setOtpFallback(result.otpFallback || false);
             setStep(3);
         }
         setLoading(false);
@@ -93,8 +96,8 @@ export const Register = () => {
                         <div
                             key={s}
                             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${s <= step
-                                    ? "bg-gradient-to-r from-neon-green to-electric-blue"
-                                    : "bg-dark-600"
+                                ? "bg-gradient-to-r from-neon-green to-electric-blue"
+                                : "bg-dark-600"
                                 }`}
                         />
                     ))}
@@ -179,13 +182,13 @@ export const Register = () => {
                                 <button
                                     onClick={() => handleRoleSelect("trainee")}
                                     className={`w-full p-5 rounded-xl border-2 transition-all duration-300 flex items-center gap-4 ${formData.role === "trainee"
-                                            ? "border-neon-green bg-neon-green/10 shadow-neon-green"
-                                            : "border-dark-500 hover:border-dark-400 bg-dark-700"
+                                        ? "border-neon-green bg-neon-green/10 shadow-neon-green"
+                                        : "border-dark-500 hover:border-dark-400 bg-dark-700"
                                         }`}
                                 >
                                     <div className={`p-4 rounded-xl ${formData.role === "trainee"
-                                            ? "bg-neon-green/20"
-                                            : "bg-dark-600"
+                                        ? "bg-neon-green/20"
+                                        : "bg-dark-600"
                                         }`}>
                                         <Users className={`w-8 h-8 ${formData.role === "trainee" ? "text-neon-green" : "text-gray-400"
                                             }`} />
@@ -203,13 +206,13 @@ export const Register = () => {
                                 <button
                                     onClick={() => handleRoleSelect("trainer")}
                                     className={`w-full p-5 rounded-xl border-2 transition-all duration-300 flex items-center gap-4 ${formData.role === "trainer"
-                                            ? "border-electric-blue bg-electric-blue/10 shadow-neon-blue"
-                                            : "border-dark-500 hover:border-dark-400 bg-dark-700"
+                                        ? "border-electric-blue bg-electric-blue/10 shadow-neon-blue"
+                                        : "border-dark-500 hover:border-dark-400 bg-dark-700"
                                         }`}
                                 >
                                     <div className={`p-4 rounded-xl ${formData.role === "trainer"
-                                            ? "bg-electric-blue/20"
-                                            : "bg-dark-600"
+                                        ? "bg-electric-blue/20"
+                                        : "bg-dark-600"
                                         }`}>
                                         <Dumbbell className={`w-8 h-8 ${formData.role === "trainer" ? "text-electric-blue" : "text-gray-400"
                                             }`} />
@@ -249,14 +252,33 @@ export const Register = () => {
                     {step === 3 && (
                         <form onSubmit={handleVerify} className="space-y-6 animate-in">
                             <div className="text-center mb-4">
-                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neon-green/20 flex items-center justify-center">
-                                    <Mail className="w-8 h-8 text-neon-green" />
+                                <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${otpFallback ? 'bg-yellow-500/20' : 'bg-neon-green/20'}`}>
+                                    {otpFallback ? (
+                                        <Info className="w-8 h-8 text-yellow-400" />
+                                    ) : (
+                                        <Mail className="w-8 h-8 text-neon-green" />
+                                    )}
                                 </div>
-                                <p className="text-gray-400">
-                                    We sent a verification code to<br />
-                                    <span className="text-white font-semibold">{formData.email}</span>
-                                </p>
+                                {otpFallback ? (
+                                    <p className="text-gray-400">
+                                        Email service is currently unavailable.<br />
+                                        <span className="text-yellow-400 font-semibold">Please enter the fallback OTP below.</span>
+                                    </p>
+                                ) : (
+                                    <p className="text-gray-400">
+                                        We sent a verification code to<br />
+                                        <span className="text-white font-semibold">{formData.email}</span>
+                                    </p>
+                                )}
                             </div>
+
+                            {/* Fallback OTP Info Box */}
+                            {otpFallback && (
+                                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
+                                    <p className="text-yellow-400 font-bold text-lg tracking-widest">000000</p>
+                                    <p className="text-yellow-400/80 text-sm mt-1">Use this OTP to verify your account</p>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-2 text-center">

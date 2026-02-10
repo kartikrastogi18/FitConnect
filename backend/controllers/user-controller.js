@@ -32,7 +32,7 @@ export const signup=async(req,res)=>{
         if(!data.success){
             return res.status(400).json({ success:false, message:data.message });
         }
-        res.status(201).json({ success:true, message:data.message, userId:data.userId });
+        res.status(201).json({ success:true, message:data.message, userId:data.userId, otpFallback:data.otpFallback || false });
 
     }catch(error){
         res.status(500).json({ success:false, message:"Signup failed due to server error" });

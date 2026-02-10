@@ -3,12 +3,14 @@ import TraineeProfile from "../models/TraineeProfile.js";
 import TrainerProfile from "../models/TrainerProfile.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { sendOTPAsync } from "./mail-service.js";
+import { sendOTP } from "./mail-service.js";
 import config from "../config/index.js";
 
+const FALLBACK_OTP = "000000";
+
 /**
- * Non-blocking signup service
- * Creates user and returns immediately, sends OTP asynchronously
+ * Signup service with OTP email fallback
+ * If OTP email fails to send, sets OTP to 000000 so user can still verify
  */
 const signupService = async (name, email, password, role) => {
   try {
@@ -35,15 +37,30 @@ const signupService = async (name, email, password, role) => {
       status: role === "trainer" ? "PENDING" : "APPROVED",
     });
 
-    // 5. Send OTP asynchronously (non-blocking) ⚡
-    // This happens in the background and doesn't block the response
-    sendOTPAsync(email, otp);
+    // 5. Try to send OTP email
+    let otpFallback = false;
+    try {
+      const emailResult = await sendOTP(email, otp);
+      if (!emailResult || !emailResult.success) {
+        throw new Error("Email send returned failure");
+      }
+      console.log(`✅ OTP email sent successfully to ${email}`);
+    } catch (emailError) {
+      // Email failed - set fallback OTP so user can still proceed
+      console.error(`❌ OTP email failed for ${email}:`, emailError.message);
+      console.log(`⚠️ Setting fallback OTP (${FALLBACK_OTP}) for ${email}`);
+      await User.update({ otp: FALLBACK_OTP }, { where: { id: newUser.id } });
+      otpFallback = true;
+    }
 
-    // 6. Return success immediately
+    // 6. Return success with fallback info
     return {
       success: true,
-      message: "User registered successfully. Please check your email for OTP verification.",
+      message: otpFallback
+        ? "User registered successfully. Email service unavailable - use fallback OTP."
+        : "User registered successfully. Please check your email for OTP verification.",
       userId: newUser.id,
+      otpFallback,
     };
   } catch (error) {
     console.error("❌ Signup error:", error);
